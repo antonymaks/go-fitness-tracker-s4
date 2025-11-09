@@ -1,7 +1,13 @@
+// Пакет подсчета ежедневной активности:
+// кол-во шагов, дистанции в км. и потраченные калории.
 package daysteps
 
 import (
+	"fmt"
+	"strconv"
+	"strings"
 	"time"
+	// "github.com/Yandex-Practicum/tracker/internal/spentcalories"
 )
 
 const (
@@ -11,10 +17,46 @@ const (
 	mInKm = 1000
 )
 
+// Парсит строку активности,
+// возвращает кол-во шагов, время прогулки и возможную ошибку.
 func parsePackage(data string) (int, time.Duration, error) {
-	// TODO: реализовать функцию
+	dataSlice := strings.Split(data, ",")
+	if len(dataSlice) != 2 {
+		return 0, 0, fmt.Errorf("incorrect input data format")
+	}
+
+	stepsCount, err := strconv.Atoi(dataSlice[0])
+	if err != nil {
+		return 0, 0, err
+	}
+	if stepsCount <= 0 {
+		return 0, 0, fmt.Errorf("amount of steps must be greater, than zero")
+	}
+
+	walkDuration, err := time.ParseDuration(dataSlice[1])
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return stepsCount, walkDuration, nil
 }
 
+// Парсит строку при помощи parsePackage,
+// возращает строку со всеми данными об активности:
+// шагии, дистанция и калории.
 func DayActionInfo(data string, weight, height float64) string {
-	// TODO: реализовать функцию
+	steps, duration, err := parsePackage(data)
+	if err != nil {
+		fmt.Println(err)
+		return ``
+	}
+
+	distanceMeters := float64(steps) * stepLength
+	distanceKm := distanceMeters / mInKm
+	calories := duration // временная затычка до реализации функции подсчета калорий
+	// calories := spentcalories.WalkingStepCalories(steps, weight, height, duration)
+
+	outputString := fmt.Sprintf("anount of steps: %d\n distance is %0.2f km \n you burn %T cal. \n", steps, distanceKm, calories)
+
+	return outputString
 }
