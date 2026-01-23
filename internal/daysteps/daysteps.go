@@ -9,8 +9,6 @@ import (
 	"time"
 
 	"github.com/Yandex-Practicum/tracker/internal/spentcalories"
-	//spcal "github.com/antonymaks/go-fitness-tracker-s4/internal/spentcalories/spentcalories.go"
-	//spcal "spentcalories/spentcalories.go"
 )
 
 const (
@@ -56,11 +54,12 @@ func DayActionInfo(data string, weight, height float64) string {
 
 	distanceMeters := float64(steps) * stepLength
 	distanceKm := distanceMeters / mInKm
-	//calories := duration // временная затычка до реализации функции подсчета калорий
-	//calories := spcal.WalkingStepCalories(steps, weight, height, duration)
 	calories, err := spentcalories.WalkingSpentCalories(steps, weight, height, duration)
+	if err != nil {
+		outputString := fmt.Sprintf("Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.",
+			steps, distanceKm, calories)
+		return outputString
 
-	outputString := fmt.Sprintf("anount of steps: %d\n distance is %0.2f km \n you burn %T cal. \n", steps, distanceKm, calories)
-
-	return outputString
+	}
+	return ``
 }
