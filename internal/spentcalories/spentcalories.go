@@ -59,7 +59,65 @@ func meanSpeed(steps int, height float64, duration time.Duration) float64 {
 }
 
 func TrainingInfo(data string, weight, height float64) (string, error) {
-	return ``, nil
+	steps, activityType, duration, err := parseTraining(data)
+	if err != nil {
+		fmt.Println("training parse error", err)
+		return "", err
+	}
+
+	if steps <= 0 {
+		err := fmt.Errorf("amount of steps must be positive: %d", steps)
+		fmt.Println(err)
+		return "", err
+	}
+
+	activityType = strings.ToLower(strings.TrimSpace(activityType))
+
+	var distanceKm, speedKmh, calories float64
+
+	distanceMeters := float64(steps) * lenStep
+	distanceKm = distanceMeters / mInKm
+
+	durationHours := duration.Hours()
+
+	activityName := ""
+	switch activityType {
+	case "ходьба", "walking", "ходьба,":
+		// Устанавливаем русское название для вывода
+		activityName = "Ходьба"
+
+		if durationHours > 0 {
+			speedKmh = distanceKm / durationHours
+		}
+
+		calories, err = WalkingSpentCalories(steps, weight, height, duration)
+
+	case "бег", "running", "run", "бег,":
+		activityName = "Бег"
+
+		if durationHours > 0 {
+			speedKmh = distanceKm / durationHours
+		}
+
+		calories, err = RunningSpentCalories(steps, weight, height, duration)
+
+	default:
+		err := fmt.Errorf("unnown training type: %s", activityType)
+		fmt.Println(err)
+		return "", err
+	}
+
+	// Формируем строку результата
+	result := fmt.Sprintf(
+		"Тип тренировки: %s\nДлительность: %.2f ч.\nДистанция: %.2f км.\nСкорость: %.2f км/ч\nСожгли калорий: %.2f",
+		activityName,
+		durationHours,
+		distanceKm,
+		speedKmh,
+		calories,
+	)
+
+	return result, nil
 }
 
 func RunningSpentCalories(steps int, weight, height float64, duration time.Duration) (float64, error) {
