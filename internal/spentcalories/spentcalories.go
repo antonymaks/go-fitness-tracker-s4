@@ -44,6 +44,9 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 }
 
 func distance(steps int, height float64) float64 {
+	if steps <= 0 || height <= 0 {
+		return 0
+	}
 	lenghtOfStep := height * stepLengthCoefficient
 	distanceMeter := lenghtOfStep * float64(steps)
 	distanceKm := distanceMeter / mInKm
@@ -52,7 +55,7 @@ func distance(steps int, height float64) float64 {
 }
 
 func meanSpeed(steps int, height float64, duration time.Duration) float64 {
-	if duration <= 0 {
+	if steps <= 0 || height <= 0 || duration <= 0 {
 		return 0
 	}
 
@@ -78,8 +81,8 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 
 	var distanceKm, speedKmh, calories float64
 
-	distanceMeters := float64(steps) * lenStep
-	distanceKm = distanceMeters / mInKm
+	distanceKm = distance(steps, height)
+	speedKmh = meanSpeed(steps, height, duration)
 
 	durationHours := duration.Hours()
 
@@ -88,18 +91,10 @@ func TrainingInfo(data string, weight, height float64) (string, error) {
 	case "ходьба", "walking", "ходьба,":
 		activityName = "Ходьба"
 
-		if durationHours > 0 {
-			speedKmh = distanceKm / durationHours
-		}
-
 		calories, err = WalkingSpentCalories(steps, weight, height, duration)
 
 	case "бег", "running", "run", "бег,":
 		activityName = "Бег"
-
-		if durationHours > 0 {
-			speedKmh = distanceKm / durationHours
-		}
 
 		calories, err = RunningSpentCalories(steps, weight, height, duration)
 
